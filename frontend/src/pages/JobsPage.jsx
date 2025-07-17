@@ -329,6 +329,24 @@ const JobsPage = () => {
         .join(", ")
     : "";
 
+  const handleDownload = async (url) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = `job_attachment_${Date.now()}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      console.error("Download failed", error);
+    }
+  };
+
   return (
     <main className="min-h-screen flex flex-col overflow-auto bg-slate-100">
       <Navbar />
@@ -419,7 +437,7 @@ const JobsPage = () => {
               {isjobLoading ? (
                 <JobPostSkeleton2 rows={6} />
               ) : isError ? (
-                <p className="text-red-500 text-lg font-semibold text-center font-poppins">
+                <p className="text-gray-500 text-lg font-normal text-center font-poppins">
                   {isError}
                 </p>
               ) : filteredJobPosts.length > 0 ? (
@@ -439,13 +457,13 @@ const JobsPage = () => {
                       {job.jobDescription}
                     </p>
                     <div className="flex flex-nowrap gap-4 mt-3">
-                      <p className="rounded-lg bg-blue-100 text-xs p-2 font-semibold text-blue-500">
+                      <p className="rounded-xl bg-blue-100 text-xs p-2 font-medium font-poppins text-blue-500">
                         {job.jobCategory}
                       </p>
-                      <p className="rounded-lg bg-blue-100 text-xs p-2 font-semibold text-blue-500">
+                      <p className="rounded-xl bg-blue-100 text-xs p-2 font-medium font-poppins text-blue-500">
                         {job.jobType}
                       </p>
-                      <p className="rounded-lg bg-blue-100 text-xs p-2 font-semibold text-blue-500">
+                      <p className="rounded-xl bg-blue-100 text-xs p-2 font-medium font-poppins text-blue-500">
                         {job.jobLevel}
                       </p>
                     </div>
@@ -467,10 +485,10 @@ const JobsPage = () => {
                   <XCircle size={24} />
                 </button>
 
-                <h2 className="text-3xl font-extrabold">
+                <h2 className="text-3xl font-extrabold font-poppins">
                   {selectedJob.jobTitle}
                 </h2>
-                <p className="text-xl font-normal">
+                <p className="text-xl font-normal font-poppins">
                   {selectedJob.employer?.fullName}/
                   {selectedJob.companyName || selectedJob.employer.companyName}
                 </p>
@@ -478,7 +496,7 @@ const JobsPage = () => {
                 {selectedJob.locations && selectedJob.locations.length > 0 && (
                   <div className="flex items-center space-x-2">
                     <MapPinned className="h-5 w-5 text-gray-500" />
-                    <p className="text-xl font-normal">
+                    <p className="text-xl font-normal font-poppins">
                       {selectedJob.locations
                         .join(", ")
                         .replace(/[\\[\]"]+/g, "")}
@@ -487,7 +505,7 @@ const JobsPage = () => {
                 )}
 
                 <div className="flex items-center space-x-2">
-                  <Clock3 className="h-5 w-5 text-gray-500" />
+                  <Clock3 className="h-5 w-5 text-gray-500 font-poppins" />
                   <p className="text-xl font-normal">{selectedJob.jobType}</p>
                 </div>
 
@@ -504,7 +522,7 @@ const JobsPage = () => {
                 ) : (
                   <div className="flex items-center space-x-2">
                     <Banknote className="h-5 w-5 text-gray-500" />
-                    <p className="text-lg font-semibold">
+                    <p className="text-lg font-semibold font-poppins">
                       Salary information not available
                     </p>
                   </div>
@@ -576,7 +594,7 @@ const JobsPage = () => {
                   <ul className="space-y-4">
                     <li className="border-b pb-4">
                       <div className="flex justify-between items-center">
-                        <p className="text-base font-medium">
+                        <p className="text-base font-medium font-poppins">
                           Application Deadline:
                         </p>
                         <span className="text-base">
@@ -590,18 +608,20 @@ const JobsPage = () => {
                     </li>
                     <li className="border-b pb-4">
                       <div className="flex justify-between items-center">
-                        <p className="text-base font-medium">
+                        <p className="text-base font-medium font-poppins">
                           Job Qualifications:
                         </p>
-                        <span className="text-base">
+                        <span className="text-base font-poppins">
                           {selectedJob.jobQualifications || "Not specified"}
                         </span>
                       </div>
                     </li>
                     <li className="border-b pb-4">
                       <div className="flex justify-between items-center">
-                        <p className="text-base font-medium">Job Shift:</p>
-                        <span className="text-base">
+                        <p className="text-base font-medium font-poppins">
+                          Job Shift:
+                        </p>
+                        <span className="text-base font-poppins">
                           {selectedJob.jobShift || "Not specified"}
                         </span>
                       </div>
@@ -609,10 +629,10 @@ const JobsPage = () => {
 
                     <li className="border-b pb-4">
                       <div className="flex justify-between items-center">
-                        <p className="text-base font-medium">
+                        <p className="text-base font-medium font-poppins">
                           Preferred Language:
                         </p>
-                        <span className="text-base">
+                        <span className="text-base font-poppins">
                           {Array.isArray(selectedJob.preferredLanguages) &&
                           selectedJob.preferredLanguages.length > 0
                             ? selectedJob.preferredLanguages
@@ -625,18 +645,18 @@ const JobsPage = () => {
                       </div>
                     </li>
                     <li className="border-b pb-4">
-                      <div className="flex justify-between items-center">
-                        <p className="text-base font-medium">
+                      <div className="flex flex-col">
+                        <p className="text-base font-medium font-poppins mb-2">
                           Job Description:
                         </p>
-                        <span className="text-base">
+                        <div className="text-base bg-gray-100 p-3 rounded-lg max-h-40 overflow-y-auto text-justify font-poppins">
                           {selectedJob.jobDescription || "Not specified"}
-                        </span>
+                        </div>
                       </div>
                     </li>
                     <li className="border-b pb-4">
                       <div className="flex flex-col">
-                        <p className="text-base font-medium mb-2">
+                        <p className="text-base font-medium font-poppins mb-2">
                           Job Skills:
                         </p>
                         <ul className="flex flex-wrap gap-4">
@@ -644,13 +664,13 @@ const JobsPage = () => {
                             cleanJobSkills.split(",").map((skill, index) => (
                               <li
                                 key={index}
-                                className="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm font-poppins font-semibold"
+                                className="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm font-poppins "
                               >
                                 {toPascalCase(skill.trim())}
                               </li>
                             ))
                           ) : (
-                            <li className="text-gray-500">
+                            <li className="text-gray-500  font-poppins">
                               No Skills Specified
                             </li>
                           )}
@@ -659,7 +679,7 @@ const JobsPage = () => {
                     </li>
                     <li className="border-b pb-4">
                       <div className="flex items-center space-x-4">
-                        <p className="text-base flex-shrink-0 font-medium pr-10">
+                        <p className="flex-shrink-0 text-base font-medium font-poppins pr-10">
                           Job Attachment:
                         </p>
                         <div className="p-4 border border-gray-300 rounded-lg flex items-center flex-1">
@@ -669,22 +689,23 @@ const JobsPage = () => {
                                 href={selectedJob.jobAttachment}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-blue-600 underline flex items-center"
+                                className="text-blue-600 underline flex items-center font-poppins"
                               >
                                 <Link size={20} className="mr-2" />
                                 View Attachment
                               </a>
-                              <a
-                                href={selectedJob.jobAttachment}
-                                download
-                                className="bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600 flex items-center ml-auto"
+                              <button
+                                onClick={() =>
+                                  handleDownload(selectedJob.jobAttachment)
+                                }
+                                className="bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600 flex items-center ml-auto font-poppins"
                               >
                                 <Download size={20} className="mr-2" />
                                 Download
-                              </a>
+                              </button>
                             </div>
                           ) : (
-                            <p className="text-gray-500">
+                            <p className="text-gray-500 font-poppins">
                               No attachment available
                             </p>
                           )}
@@ -707,7 +728,7 @@ const JobsPage = () => {
             {isjobLoading ? (
               <JobPostSkeleton rows={6} />
             ) : isError ? (
-              <p className="text-red-500 text-lg font-semibold col-span-full text-center">
+              <p className="text-gray-500 text-lg font-normal col-span-full text-center font-poppins">
                 {isError}
               </p>
             ) : currentJobs.length > 0 ? (
@@ -776,7 +797,7 @@ const JobsPage = () => {
                 );
               })
             ) : (
-              <p className="text-gray-500 col-span-full text-center">
+              <p className="text-gray-500 col-span-full text-center font-poppins">
                 No job posts available.
               </p>
             )}
@@ -830,8 +851,9 @@ const JobsPage = () => {
               className="absolute top-3 right-3 bg-gray-300 hover:bg-red-500 text-black w-7 h-7 p-2 rounded-full focus:outline-none cursor-pointer"
             />
 
-            <h2 className="text-xl font-semibold text-black mb-4 font-poppins">
-              Apply for : {selectedJob.jobTitle}
+            <h2 className="text-2xl font-semibold text-gray-900 mb-4 leading-snug font-poppins">
+              Apply for:{" "}
+              <span className="text-blue-600">{selectedJob.jobTitle}</span>
             </h2>
 
             {error && (
@@ -862,7 +884,7 @@ const JobsPage = () => {
                   id="coverLetter"
                   name="coverLetter"
                   rows="5"
-                  placeholder="Write your cover letter here..."
+                  placeholder="Introduce yourself and express your interest in this role..."
                   className="w-full mt-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
                   value={coverLetter}
                   onChange={(e) => setCoverLetter(e.target.value)}
@@ -897,7 +919,7 @@ const JobsPage = () => {
                   id="accessibilityNeeds"
                   name="accessibilityNeeds"
                   rows="3"
-                  placeholder="Specify any accessibility accommodations required..."
+                  placeholder="Indicate any reasonable accommodations needed for your work environment."
                   className="w-full mt-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
                   value={accessibilityNeeds}
                   onChange={(e) => setAccessibilityNeeds(e.target.value)}
@@ -927,7 +949,7 @@ const JobsPage = () => {
                   type="file"
                   id="resume"
                   name="resume"
-                  accept=".pdf,.doc,.docx"
+                  accept=".pdf"
                   className="block w-full mt-1 text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 focus:outline-none"
                 />
                 {formErrors.resume && (
@@ -949,7 +971,7 @@ const JobsPage = () => {
                   id="additionalFiles"
                   name="additionalFiles"
                   multiple
-                  accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
+                  accept=".pdf"
                   className="block w-full mt-1 text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 focus:outline-none"
                 />
               </div>

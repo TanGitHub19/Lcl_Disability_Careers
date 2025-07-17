@@ -9,8 +9,8 @@ import {
   Undo2,
   X,
 } from "lucide-react";
-import { FaMicrophone, FaMicrophoneSlash } from 'react-icons/fa';
 import { useEffect, useRef, useState } from "react";
+import { FaMicrophone, FaMicrophoneSlash } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
 import FormatTimeDate from "../components/FormatTimeDate";
 import Modal from "../components/Modal";
@@ -27,6 +27,8 @@ const JobDetailsPage = () => {
   const { user } = authStore();
   const [formErrors, setFormErrors] = useState({});
   const [coverLetter, setCoverLetter] = useState("");
+  const [videoIntroduction, setVideoIntroduction] = useState(null);
+  const [videoPreview, setVideoPreview] = useState(null);
   const [accessibilityNeeds, setAccessibilityNeeds] = useState("");
   const [isListening, setIsListening] = useState({
     coverLetter: false,
@@ -101,13 +103,22 @@ const JobDetailsPage = () => {
     return errors;
   };
 
-  if (!jobDetails) {
-    return <div>Job details not found.</div>;
-  }
-
   const handleApplyModal = () => {
     setOpen(true);
   };
+
+
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [open]);
 
   const handleApply = async (event) => {
     event.preventDefault();
@@ -120,6 +131,7 @@ const JobDetailsPage = () => {
     const coverLetter = formData.get("coverLetter");
     const accessibilityNeeds = formData.get("accessibilityNeeds");
     const resume = formData.get("resume");
+    const medicalCertificate = formData.get("medicalCertificate");
     const additionalFiles = formData.getAll("additionalFiles");
 
     const errors = validateForm(coverLetter, resume);
@@ -135,6 +147,8 @@ const JobDetailsPage = () => {
         coverLetter,
         accessibilityNeeds,
         resume,
+        medicalCertificate,
+        videoIntroduction,
         additionalFiles,
       });
 
@@ -143,6 +157,8 @@ const JobDetailsPage = () => {
         coverLetter,
         accessibilityNeeds,
         resume,
+        medicalCertificate,
+        videoIntroduction,
         additionalFiles,
       });
 
@@ -154,6 +170,20 @@ const JobDetailsPage = () => {
         console.error("Error submitting application:", error);
       }
     }
+  };
+
+  const handleVideoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setVideoIntroduction(file);
+      setVideoPreview(URL.createObjectURL(file));
+    }
+  };
+
+  const removeVideo = () => {
+    setVideoIntroduction(null);
+    setVideoPreview(null);
+    document.getElementById("videoIntroduction").value = "";
   };
 
   const toPascalCase = (input) => {
@@ -169,6 +199,24 @@ const JobDetailsPage = () => {
     .map((skill) => skill.replace(/[[\]"]/g, "").trim())
     .filter((skill) => skill !== "")
     .join(", ");
+
+  const handleDownload = async (url) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = `job_attachment_${Date.now()}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      console.error("Download failed", error);
+    }
+  };
 
   return (
     <main className="min-h-screen mb-5 bg-gray-100">
@@ -241,7 +289,7 @@ const JobDetailsPage = () => {
             jobDetails?.expectedSalary?.maxSalary ? (
               <div className="flex items-center space-x-2 mt-4">
                 <Banknote className="h-5 w-5 text-gray-500" />
-                <p className="text-xl font-normal font-poppins">
+                <p className="text-xl font-poppins">
                   ₱{jobDetails?.expectedSalary?.minSalary?.toLocaleString()} - ₱
                   {jobDetails?.expectedSalary?.maxSalary?.toLocaleString()}
                 </p>
@@ -287,8 +335,10 @@ const JobDetailsPage = () => {
               <ul className="space-y-4 font-poppins">
                 <li className="border-b pb-4">
                   <div className="flex justify-between items-center">
-                    <p className="text-lg font-medium">Application Deadline:</p>
-                    <span className="text-lg">
+                    <p className="text-lg font-medium font-poppins">
+                      Application Deadline:
+                    </p>
+                    <span className="text-lg font-poppins">
                       {jobDetails?.applicationDeadline
                         ? new Date(
                             jobDetails?.applicationDeadline
@@ -300,8 +350,10 @@ const JobDetailsPage = () => {
 
                 <li className="border-b pb-4">
                   <div className="flex justify-between items-center">
-                    <p className="text-lg font-medium">Job Qualifications:</p>
-                    <span className="text-lg">
+                    <p className="text-lg font-medium font-poppins">
+                      Job Qualifications:
+                    </p>
+                    <span className="text-lg font-poppins">
                       {jobDetails?.jobQualifications || "Not specified"}
                     </span>
                   </div>
@@ -309,8 +361,10 @@ const JobDetailsPage = () => {
 
                 <li className="border-b pb-4">
                   <div className="flex justify-between items-center">
-                    <p className="text-lg font-medium">Job Shift:</p>
-                    <span className="text-lg">
+                    <p className="text-lg font-medium font-poppins">
+                      Job Shift:
+                    </p>
+                    <span className="text-lg font-poppins">
                       {jobDetails?.jobShift || "Not specified"}
                     </span>
                   </div>
@@ -318,8 +372,10 @@ const JobDetailsPage = () => {
 
                 <li className="border-b pb-4">
                   <div className="flex justify-between items-center">
-                    <p className="text-base font-medium">Preferred Language:</p>
-                    <span className="text-base">
+                    <p className="text-lg font-medium font-poppins">
+                      Preferred Language:
+                    </p>
+                    <span className="text-base font-poppins">
                       {Array.isArray(jobDetails?.preferredLanguages) &&
                       jobDetails?.preferredLanguages.length > 0
                         ? jobDetails?.preferredLanguages.join(", ")
@@ -330,10 +386,10 @@ const JobDetailsPage = () => {
 
                 <li className="border-b pb-4">
                   <div className="flex flex-col">
-                    <p className="text-base font-medium mb-2">
+                    <p className="text-lg font-medium font-poppins mb-2">
                       Job Description:
                     </p>
-                    <div className="text-base bg-gray-100 p-3 rounded-lg max-h-40 overflow-y-auto text-justify">
+                    <div className="text-base bg-gray-100 p-3 rounded-lg max-h-40 overflow-y-auto text-justify font-poppins">
                       {jobDetails.jobDescription || "Not specified"}
                     </div>
                   </div>
@@ -341,19 +397,23 @@ const JobDetailsPage = () => {
 
                 <li className="border-b pb-4">
                   <div>
-                    <p className="text-lg font-medium mb-2">Job Skills:</p>
+                    <p className="text-lg font-medium font-poppins mb-2">
+                      Job Skills:
+                    </p>
                     <ul className="flex flex-wrap gap-2">
                       {cleanJobSkills ? (
                         cleanJobSkills.split(",").map((skill, index) => (
                           <li
                             key={index}
-                            className="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm font-poppins font-semibold"
+                            className="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm font-poppins"
                           >
                             {toPascalCase(skill.trim())}
                           </li>
                         ))
                       ) : (
-                        <li className="text-gray-500">No Skills Specified</li>
+                        <li className="text-gray-500 font-poppins">
+                          No Skills Specified
+                        </li>
                       )}
                     </ul>
                   </div>
@@ -361,7 +421,7 @@ const JobDetailsPage = () => {
 
                 <li className="border-b pb-4">
                   <div className="flex items-center space-x-4">
-                    <p className="text-base flex-shrink-0 font-medium pr-10">
+                    <p className="text-lg flex-shrink-0 font-medium pr-10 font-poppins">
                       Job Attachment:
                     </p>
                     <div className="p-4 border border-gray-300 rounded-lg flex items-center flex-1">
@@ -378,7 +438,9 @@ const JobDetailsPage = () => {
                           </a>
                           <a
                             href={jobDetails?.jobAttachment}
-                            download
+                            onClick={() =>
+                              handleDownload(jobDetails.jobAttachment)
+                            }
                             className="bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600 flex items-center ml-auto"
                           >
                             <Download size={20} className="mr-2" />
@@ -399,144 +461,201 @@ const JobDetailsPage = () => {
 
       {open && jobDetails && (
         <Modal open={open} onClose={() => setOpen(false)}>
-          <div className="p-6 w-[90vh] mx-auto relative font-poppins">
+          <div className="p-6 w-[90vh] mx-auto relative font-poppins ">
             <X
               onClick={() => setOpen(false)}
-              className="absolute top-3 right-3 bg-gray-300 hover:bg-red-500 text-black w-7 h-7 p-2 rounded-full focus:outline-none cursor-pointer"
+              className="absolute top-3 right-3 bg-gray-300 hover:bg-red-500 text-black w-8 h-8 p-2 rounded-full focus:outline-none cursor-pointer"
             />
+            <div className="max-h-[80vh] overflow-y-auto">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4 leading-snug font-poppins">
+                Apply for:{" "}
+                <span className="text-blue-600">{jobDetails.jobTitle}</span>
+              </h2>
 
-            <h2 className="text-xl font-semibold text-black mb-4 font-poppins">
-              Apply for : {jobDetails.jobTitle}
-            </h2>
+              {error && (
+                <p className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded mb-4">
+                  {error}
+                </p>
+              )}
 
-            {error && (
-              <p className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded mb-4">
-                {error}
-              </p>
-            )}
+              <form
+                onSubmit={handleApply}
+                className="space-y-4"
+                encType="multipart/form-data"
+              >
+                <div className="relative">
+                  <label
+                    htmlFor="coverLetter"
+                    className="block text-sm font-medium text-gray-700 font-poppins"
+                  >
+                    Cover Letter <span className="text-red-500">*</span>
+                  </label>
+                  <textarea
+                    id="coverLetter"
+                    name="coverLetter"
+                    rows="5"
+                    placeholder="Introduce yourself and express your interest in this role..."
+                    className="w-full mt-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
+                    value={coverLetter}
+                    onChange={(e) => setCoverLetter(e.target.value)}
+                  ></textarea>
+                  <button
+                    type="button"
+                    onClick={() => toggleListening("coverLetter")}
+                    className="absolute top-10 right-3 p-2 rounded-full"
+                  >
+                    {isListening.coverLetter ? (
+                      <FaMicrophone size={20} />
+                    ) : (
+                      <FaMicrophoneSlash size={24} />
+                    )}
+                  </button>
 
-            <form
-              onSubmit={handleApply}
-              className="space-y-4"
-              encType="multipart/form-data"
-            >
-              <div className="relative">
-                <label
-                  htmlFor="coverLetter"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Cover Letter <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                  id="coverLetter"
-                  name="coverLetter"
-                  rows="5"
-                  placeholder="Write your cover letter here..."
-                  className="w-full mt-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
-                  value={coverLetter}
-                  onChange={(e) => setCoverLetter(e.target.value)}
-                ></textarea>
-                <button
-                  type="button"
-                  onClick={() => toggleListening("coverLetter")}
-                  className="absolute top-10 right-3 p-2 rounded-full"
-                >
-                  {isListening.coverLetter ? (
-                    <FaMicrophone size={20} />
-                  ) : (
-                    <FaMicrophoneSlash size={24}/>
+                  {formErrors.coverLetter && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {formErrors.coverLetter}
+                    </p>
                   )}
-                </button>
+                </div>
 
-                {formErrors.coverLetter && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {formErrors.coverLetter}
-                  </p>
-                )}
-              </div>
+                <div className="relative">
+                  <label
+                    htmlFor="accessibilityNeeds"
+                    className="block text-sm font-medium text-gray-700 font-poppins"
+                  >
+                    Accessibility Needs
+                  </label>
+                  <textarea
+                    id="accessibilityNeeds"
+                    name="accessibilityNeeds"
+                    rows="3"
+                    placeholder="Indicate any reasonable accommodations needed for your work environment."
+                    className="w-full mt-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
+                    value={accessibilityNeeds}
+                    onChange={(e) => setAccessibilityNeeds(e.target.value)}
+                  ></textarea>
 
-              <div className="relative">
-                <label
-                  htmlFor="accessibilityNeeds"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Accessibility Needs
-                </label>
-                <textarea
-                  id="accessibilityNeeds"
-                  name="accessibilityNeeds"
-                  rows="3"
-                  placeholder="Specify any accessibility accommodations required..."
-                  className="w-full mt-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
-                  value={accessibilityNeeds}
-                  onChange={(e) => setAccessibilityNeeds(e.target.value)}
-                ></textarea>
+                  <button
+                    type="button"
+                    onClick={() => toggleListening("accessibilityNeeds")}
+                    className="absolute top-10 right-3 p-2 rounded-full"
+                  >
+                    {isListening.accessibilityNeeds ? (
+                      <FaMicrophone size={20} />
+                    ) : (
+                      <FaMicrophoneSlash size={22} />
+                    )}
+                  </button>
+                </div>
 
-                <button
-                  type="button"
-                  onClick={() => toggleListening("accessibilityNeeds")}
-                  className="absolute top-10 right-3 p-2 rounded-full"
-                >
-                  {isListening.accessibilityNeeds ? ( 
-                    <FaMicrophone size={20}/>
-                  ) : (
-                    <FaMicrophoneSlash size={22} />
+                <div>
+                  <label
+                    htmlFor="resume"
+                    className="block text-sm font-medium text-gray-700 font-poppins"
+                  >
+                    Resume <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="file"
+                    id="resume"
+                    name="resume"
+                    accept=".pdf"
+                    className="block w-full mt-1 text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 focus:outline-none"
+                  />
+                  {formErrors.resume && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {formErrors.resume}
+                    </p>
                   )}
-                </button>
-              </div>
+                </div>
 
-              <div>
-                <label
-                  htmlFor="resume"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Resume <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="file"
-                  id="resume"
-                  name="resume"
-                  accept=".pdf,.doc,.docx"
-                  className="block w-full mt-1 text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 focus:outline-none"
-                />
-                {formErrors.resume && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {formErrors.resume}
-                  </p>
-                )}
-              </div>
+                <div>
+                  <label
+                    htmlFor="medicalCertificate"
+                    className="block text-sm font-medium text-gray-700 font-poppins"
+                  >
+                    Medical Certificate (Optional)
+                  </label>
+                  <input
+                    type="file"
+                    id="medicalCertificate"
+                    name="medicalCertificate"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    className="block w-full mt-1 text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 focus:outline-none"
+                  />
+                </div>
 
-              <div>
-                <label
-                  htmlFor="additionalFiles"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Additional Files (Optional)
-                </label>
-                <input
-                  type="file"
-                  id="additionalFiles"
-                  name="additionalFiles"
-                  multiple
-                  accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
-                  className="block w-full mt-1 text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 focus:outline-none"
-                />
-              </div>
+                <div className="space-y-2">
+                  <label
+                    htmlFor="videoIntroduction"
+                    className="block text-sm font-medium text-gray-700 font-poppins"
+                  >
+                    Video Introduction (Optional)
+                  </label>
 
-              <div className="mt-6">
-                <button
-                  type="submit"
-                  className="w-full px-4 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold focus:outline-none focus:ring focus:ring-blue-300 flex justify-center items-center"
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <Loader className="w-6 h-6 animate-spin" />
-                  ) : (
-                    "Submit Application"
+                  <input
+                    type="file"
+                    id="videoIntroduction"
+                    name="videoIntroduction"
+                    accept="video/*"
+                    onChange={handleVideoChange}
+                    className="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 focus:outline-none"
+                  />
+
+                  {videoPreview && (
+                    <div className="relative mt-3">
+                      <div className="overflow-hidden rounded-lg border border-gray-300 shadow-sm max-w-full">
+                        <video
+                          src={videoPreview}
+                          controls
+                          className="w-full max-h-[300px] object-contain rounded"
+                        />
+                      </div>
+                      <div className="mt-2 flex justify-end">
+                        <button
+                          type="button"
+                          onClick={removeVideo}
+                          className="px-3 py-1 text-sm font-medium text-white bg-red-500 rounded hover:bg-red-600"
+                        >
+                          Remove Video
+                        </button>
+                      </div>
+                    </div>
                   )}
-                </button>
-              </div>
-            </form>
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="additionalFiles"
+                    className="block text-sm font-medium text-gray-700 font-poppins"
+                  >
+                    Additional Files (Optional)
+                  </label>
+                  <input
+                    type="file"
+                    id="additionalFiles"
+                    name="additionalFiles"
+                    multiple
+                    accept=".pdf"
+                    className="block w-full mt-1 text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 focus:outline-none"
+                  />
+                </div>
+
+                <div className="mt-6">
+                  <button
+                    type="submit"
+                    className="w-full px-4 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold focus:outline-none focus:ring focus:ring-blue-300 flex justify-center items-center"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <Loader className="w-6 h-6 animate-spin" />
+                    ) : (
+                      "Submit Application"
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </Modal>
       )}

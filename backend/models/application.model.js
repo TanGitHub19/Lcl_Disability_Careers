@@ -20,6 +20,14 @@ const applicationSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    medicalCertificate: {
+      type: String,
+      required: false,
+    },
+    videoIntroduction: {
+      type: String,
+      required: false,
+    },
     additionalFiles: [{ type: String }],
     accessibilityNeeds: {
       type: String,
@@ -31,7 +39,7 @@ const applicationSchema = new mongoose.Schema(
         "Pending",
         "Shortlisted",
         "Rejected",
-        "Interview Scheduled", 
+        "Interview Scheduled",
         "Interview Completed",
         "Hired",
       ],
@@ -46,25 +54,19 @@ const applicationSchema = new mongoose.Schema(
       },
       location: {
         type: String,
-        required: function() {
+        required: function () {
           return this.interview_type === "In-Person";
-        }
+        },
       },
-      platformLink: {  
+      platformLink: {
         type: String,
-        required: function() {
+        required: function () {
           return this.interview_type === "Online";
-        }
+        },
       },
       status: {
         type: String,
-        enum: [
-          "Scheduled",
-          "Completed",
-          "Cancelled",
-          "Confirmed",
-          "Declined",
-        ],
+        enum: ["Scheduled", "Completed", "Cancelled", "Confirmed", "Declined"],
         default: "Scheduled",
       },
       rescheduleRequestedByApplicant: {

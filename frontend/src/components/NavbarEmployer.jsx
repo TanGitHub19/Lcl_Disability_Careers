@@ -96,13 +96,13 @@ const NavbarEmployer = () => {
                 <p className="text-gray-400 px-4 py-2">Searching...</p>
               )}
               {error && (
-                <p className="text-red-500 px-4 py-2">Error: {error}</p>
+                <p className="text-white font-poppins px-4 py-2"> {error}</p>
               )}
               {users.length > 0 &&
                 users.map((user) => (
                   <div
                     key={user._id}
-                    className="flex items-center px-4 py-2 hover:bg-gray-600 cursor-pointer rounded transition-colors"
+                    className="flex items-center px-4 py-2 hover:bg-gray-600 cursor-pointer rounded transition-colors "
                     onClick={() => handleUserClick(user._id)}
                   >
                     <img
@@ -110,7 +110,7 @@ const NavbarEmployer = () => {
                       alt={user.fullName}
                       className="w-8 h-8 rounded-full mr-3"
                     />
-                    <span>{user.fullName}</span>
+                    <span className="font-poppins">{user.fullName}</span>
                   </div>
                 ))}
               {!isLoading && users.length === 0 && !error && (

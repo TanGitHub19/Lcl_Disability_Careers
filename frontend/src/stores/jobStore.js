@@ -72,7 +72,7 @@ export const jobStore = create((set, get) => ({
   },
 
   fetchCategoryCounts: async () => {
-    set({ loading: true, error: null }); 
+    set({ loading: true, isError: null }); 
 
     try {
       const response = await fetch(
@@ -84,7 +84,7 @@ export const jobStore = create((set, get) => ({
       const data = await response.json();
       set({ categoryCounts: data.data, loading: false });
     } catch (error) {
-      set({ error: error.message, loading: false });
+      set({ isError: error.message, loading: false });
     }
   },
 
@@ -724,6 +724,8 @@ export const jobStore = create((set, get) => ({
     coverLetter,
     accessibilityNeeds,
     resume,
+    medicalCertificate,        
+    videoIntroduction,        
     additionalFiles,
   }) => {
     set({ isLoading: true, error: null });
@@ -732,17 +734,25 @@ export const jobStore = create((set, get) => ({
       formData.append("jobId", jobId);
       formData.append("coverLetter", coverLetter);
       formData.append("accessibilityNeeds", accessibilityNeeds);
-
+  
       if (resume) {
         formData.append("resume", resume);
       }
-
+  
+      if (medicalCertificate) {
+        formData.append("medicalCertificate", medicalCertificate); 
+      }
+  
+      if (videoIntroduction) {
+        formData.append("videoIntroduction", videoIntroduction); 
+      }
+  
       if (additionalFiles && additionalFiles.length > 0) {
         additionalFiles.forEach((file) => {
           formData.append("additionalFiles", file);
         });
       }
-
+  
       const response = await axios.post(
         `${API_URL}/applications/apply`,
         formData,
@@ -752,7 +762,7 @@ export const jobStore = create((set, get) => ({
           },
         }
       );
-
+  
       toast.success(
         response.data.message || "Application submitted successfully."
       );
@@ -765,10 +775,6 @@ export const jobStore = create((set, get) => ({
         throw new Error("You have already applied for this job.");
       } else {
         console.error("Error applying for job:", error);
-        console.error(
-          "Error applying for job:",
-          JSON.stringify(error, null, 2)
-        );
         set({
           error: error.response?.data?.error || "Error applying for job",
           isLoading: false,
@@ -777,7 +783,7 @@ export const jobStore = create((set, get) => ({
       }
     }
   },
-
+  
   createJob: async ({
     companyName,
     applicationDeadline,

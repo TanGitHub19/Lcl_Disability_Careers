@@ -59,6 +59,10 @@ export const applyJobs = async (req, res) => {
       return res.status(400).json({ error: "Resume is required." });
     }
 
+    if (!req.files || !req.files.medicalCertificate) {
+      return res.status(400).json({ error: "Medical certificate is required." });
+    }
+
     const job = await Job.findById(jobId).populate("employer");
     if (!job) {
       return res.status(404).json({ error: "Job not found." });
@@ -85,6 +89,8 @@ export const applyJobs = async (req, res) => {
     }
 
     const resumeUrl = req.files.resume ? req.files.resume[0].path : null;
+    const medicalCertificateUrl = req.files.medicalCertificate ? req.files.medicalCertificate[0].path : null;
+    const videoIntroductionUrl = req.files.videoIntroduction ? req.files.videoIntroduction[0].path : null;
     const additionalFilesUrls = req.files.additionalFiles
       ? req.files.additionalFiles.map((file) => file.path)
       : [];
@@ -99,6 +105,8 @@ export const applyJobs = async (req, res) => {
       applicantId,
       coverLetter,
       resume: resumeUrl, 
+      medicalCertificate: medicalCertificateUrl,
+      videoIntroduction: videoIntroductionUrl,
       additionalFiles: additionalFilesUrls, 
       accessibilityNeeds,
     });

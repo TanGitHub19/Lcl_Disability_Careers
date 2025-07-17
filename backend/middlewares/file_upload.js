@@ -33,7 +33,9 @@ const upload = multer({ storage });
 
 export const uploadFiles = upload.fields([
   { name: "resume", maxCount: 1 },
+  { name: "medicalCertificate", maxCount: 1 },
   { name: "additionalFiles", maxCount: 5 },
+  { name: "videoIntroduction", maxCount: 1 },
   { name: "jobAttachment", maxCount: 1 },
 ]);
 

@@ -112,9 +112,9 @@ const EmployerJobPage = () => {
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-gray-100">
       <NavbarEmployer />
-      <div className="flex flex-1">
+      <div className="flex flex-1 overflow-hidden">
         <Sidebar />
-        <div className="flex-1 p-4 overflow-y-auto">
+        <div className="flex-1 p-4 overflow-x-auto">
           <div className="flex items-center justify-between mb-4">
             <div className="flex w-2/3">
               <input
@@ -156,7 +156,7 @@ const EmployerJobPage = () => {
               [...Array(5)].map((_, index) => (
                 <div
                   key={index}
-                  className="p-4 bg-white shadow-md m-2 relative"
+                  className="p-4 bg-white shadow-md m-2 relative" 
                 >
                   <SkeletonLoader className="h-6 w-1/2 mb-2" />
                   <SkeletonLoader className="h-4 w-1/3 mb-2" />
@@ -181,7 +181,7 @@ const EmployerJobPage = () => {
                 {[...filteredJobs].reverse().map((job) => (
                   <div
                     key={job._id}
-                    className="p-4 bg-white shadow-md m-2 relative"
+                    className="p-4 bg-white shadow-md m-2 relative "
                   >
                     <h3 className="text-2xl font-semibold font-poppins">
                       {job.jobTitle}

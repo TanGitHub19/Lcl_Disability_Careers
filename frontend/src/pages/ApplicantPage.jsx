@@ -125,7 +125,7 @@ const ApplicantPage = () => {
             {isLoading ? (
               <JobPostSkeleton rows={6} />
             ) : error ? (
-              <p className="text-red-500 text-lg font-semibold col-span-full text-center">
+              <p className="text-red-500 text-lg font-semibold col-span-full text-center font-poppins">
                 {error}
               </p>
             ) : displayedJobPosts.length > 0 ? (
